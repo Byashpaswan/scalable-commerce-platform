@@ -1,0 +1,31 @@
+# Node / TypeScript compile outputs
+node_modules/
+dist/
+out-tsc/
+/frontend/dist/
+/frontend/.angular/
+
+# Environments & Secrets
+.env
+.env.local
+.env.production
+.env.development
+.env.staging
+
+# Log files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# System files & IDEs
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
