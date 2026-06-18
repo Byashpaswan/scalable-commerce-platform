@@ -25,6 +25,21 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'checkout/success',
+    loadComponent: () => import('./features/checkout/checkout-success.component').then(m => m.CheckoutSuccessComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'checkout/cancel',
+    loadComponent: () => import('./features/checkout/checkout-cancel.component').then(m => m.CheckoutCancelComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'checkout/mock-stripe-payment',
+    loadComponent: () => import('./features/checkout/mock-stripe-payment.component').then(m => m.MockStripePaymentComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'seller',
     loadComponent: () => import('./features/seller-dashboard/seller-dashboard.component').then(m => m.SellerDashboardComponent),
     canActivate: [authGuard, roleGuard(['SELLER'])]

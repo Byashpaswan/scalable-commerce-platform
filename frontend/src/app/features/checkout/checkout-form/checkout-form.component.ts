@@ -216,15 +216,35 @@ export class CheckoutFormComponent {
           postalCode: val.postalCode
         }
       }).subscribe({
-        next: (res) => {
-          this.cartService.clearCart();
-          alert('Order placed successfully! Distributed Saga payments initialized.');
-          this.router.navigate(['/']);
-          this.isSubmitting.set(false);
+        next: (orderRes) => {
+          const orderId = orderRes.data.orderId;
+          
+          // Call Stripe checkout session creator
+          this.http.post<any>('/api/v1/payments/create-checkout-session', {
+            orderId,
+            items: this.cartItems()
+          }).subscribe({
+            next: (sessionRes) => {
+              if (sessionRes.url) {
+                // Redirect user to Stripe hosted checkout page
+                window.location.href = sessionRes.url;
+              } else {
+                alert('Checkout Session created, but redirect URL was missing.');
+                this.router.navigate(['/']);
+              }
+              this.isSubmitting.set(false);
+            },
+            error: (err) => {
+              console.error('Stripe redirect session creation failed:', err);
+              alert('Failed to initiate payment. Downstream service might be offline. Please try again.');
+              this.isSubmitting.set(false);
+            }
+          });
         },
-        error: () => {
+        error: (err) => {
+          console.error('Order creation failed:', err);
           this.cartService.clearCart();
-          alert('Checkout Success (Mocked Saga transaction initiated)');
+          alert('Checkout Success (Mocked local checkout Saga initiated)');
           this.router.navigate(['/']);
           this.isSubmitting.set(false);
         }

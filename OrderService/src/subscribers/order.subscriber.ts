@@ -11,10 +11,26 @@ export const setupOrderSubscribers = async () => {
     async (content: any) => {
       const { orderId, paymentId } = content.data;
       console.log(`Saga: Consuming payment.completed for order: ${orderId}`);
-      await Order.findByIdAndUpdate(orderId, {
+      const order = await Order.findByIdAndUpdate(orderId, {
         status: 'PROCESSING',
         paymentId
-      });
+      }, { new: true });
+
+      if (order) {
+        console.log(`Saga: Publishing order.event.completed for order: ${orderId}`);
+        await RabbitMQService.publish('order.exchange', 'order.event.completed', {
+          eventId: randomUUID(),
+          timestamp: new Date().toISOString(),
+          correlationId: content.correlationId || 'N/A',
+          data: {
+            orderId: order._id,
+            items: order.items.map(item => ({
+              sku: item.variantSku,
+              quantity: item.quantity
+            }))
+          }
+        });
+      }
     }
   );
 

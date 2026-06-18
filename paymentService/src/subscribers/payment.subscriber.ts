@@ -8,7 +8,7 @@ export const setupPaymentSubscribers = async () => {
     'inventory.exchange',
     'inventory.event.reserved',
     async (content: any) => {
-      const { orderId, userId, totalAmount } = content.data;
+      const { orderId, userId, totalAmount, email } = content.data;
       console.log(`Saga: Consuming inventory.reserved. Processing payment of $${totalAmount} for order: ${orderId}`);
 
       try {
@@ -41,7 +41,8 @@ export const setupPaymentSubscribers = async () => {
               orderId,
               paymentId: paymentRecord._id,
               transactionId: mockTransactionId,
-              amount: totalAmount
+              amount: totalAmount,
+              email
             }
           });
         } else {
@@ -57,7 +58,8 @@ export const setupPaymentSubscribers = async () => {
             correlationId: content.correlationId || 'N/A',
             data: {
               orderId,
-              reason: 'card_declined'
+              reason: 'card_declined',
+              email
             }
           });
         }
@@ -69,7 +71,8 @@ export const setupPaymentSubscribers = async () => {
           correlationId: content.correlationId || 'N/A',
           data: {
             orderId,
-            reason: err.message || 'internal_error'
+            reason: err.message || 'internal_error',
+            email
           }
         });
       }

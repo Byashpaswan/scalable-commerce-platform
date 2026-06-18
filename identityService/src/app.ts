@@ -9,10 +9,12 @@ import { database } from './config/db';
 import authRouter from './routes/auth';
 import { correlationIdMiddleware } from './middlware/correlation';
 import { errorHandler } from './middlware/error';
+import { RabbitMQService } from './services/rabbitmq.service';
 
 const app = express();
 
 database.connect();
+RabbitMQService.connect();
 
 app.use(correlationIdMiddleware);
 app.use(cors({

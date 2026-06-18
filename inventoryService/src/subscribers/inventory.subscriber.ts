@@ -9,7 +9,7 @@ export const setupInventorySubscribers = async () => {
     'order.exchange',
     'order.event.created',
     async (content: any) => {
-      const { orderId, userId, items, totalAmount } = content.data;
+      const { orderId, userId, items, totalAmount, email } = content.data;
       console.log(`Saga: Consuming order.created for order: ${orderId}. Attempting stock reservation...`);
 
       const reservedItems: any[] = [];
@@ -58,6 +58,7 @@ export const setupInventorySubscribers = async () => {
             data: {
               orderId,
               userId,
+              email,
               totalAmount
             }
           });
@@ -114,6 +115,35 @@ export const setupInventorySubscribers = async () => {
         console.log(`Saga: Stock released successfully for order: ${orderId}`);
       } catch (err) {
         console.error(`Saga: Failed to release stock for order ${orderId}:`, err);
+      }
+    }
+  );
+
+  // 3. Subscribe to order.completed to commit stock
+  await RabbitMQService.subscribe(
+    'inventory-order-completed-queue',
+    'order.exchange',
+    'order.event.completed',
+    async (content: any) => {
+      const { orderId, items } = content.data;
+      console.log(`Saga: Consuming order.completed for order: ${orderId}. Committing stock...`);
+
+      try {
+        for (const item of items) {
+          const { sku, quantity } = item;
+          await Inventory.findOneAndUpdate(
+            { sku },
+            { 
+              $inc: { 
+                quantity: -quantity,
+                reservedQuantity: -quantity
+              } 
+            }
+          );
+        }
+        console.log(`Saga: Stock committed successfully for order: ${orderId}`);
+      } catch (err) {
+        console.error(`Saga: Failed to commit stock for order ${orderId}:`, err);
       }
     }
   );

@@ -9,6 +9,7 @@ import { correlationIdMiddleware } from './middlware/correlation';
 import { errorHandler } from './middlware/error';
 import { RabbitMQService } from './services/rabbitmq.service';
 import { setupPaymentSubscribers } from './subscribers/payment.subscriber';
+import paymentRouter from './routes/payment.route';
 
 const app = express();
 
@@ -28,6 +29,8 @@ app.use(helmet());
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use('/api/payments', paymentRouter);
 
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'UP', service: 'Payment-Service' });

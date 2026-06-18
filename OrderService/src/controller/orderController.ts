@@ -52,6 +52,7 @@ export const createOrder = async (req: Request, res: Response, next: NextFunctio
       data: {
         orderId: newOrder._id,
         userId,
+        email: req.user?.email,
         items: items.map((item: any) => ({
           productId: item.productId,
           sku: item.variantSku,

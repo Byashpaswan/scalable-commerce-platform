@@ -3,6 +3,8 @@ import bcrypt from 'bcrypt';
 import User from '../../models/user';
 import { TokenService } from '../../services/token.service';
 import { AppError } from '../../utils/errors';
+import { RabbitMQService } from '../../services/rabbitmq.service';
+import { randomUUID } from 'crypto';
 
 const cookieOptions = {
   httpOnly: true,
@@ -42,6 +44,19 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
     const refreshToken = TokenService.generateRefreshToken(newUser);
 
     res.cookie('refreshToken', refreshToken, cookieOptions);
+
+    await RabbitMQService.publish('user.exchange', 'user.event.registered', {
+      eventId: randomUUID(),
+      timestamp: new Date().toISOString(),
+      correlationId: req.correlationId || 'N/A',
+      data: {
+        userId: newUser._id,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        email: newUser.email,
+        role: newUser.role,
+      },
+    });
 
     res.status(201).json({
       success: true,
