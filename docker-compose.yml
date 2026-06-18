@@ -186,6 +186,16 @@ services:
     networks:
       - ecommerce_network
 
+  frontend:
+    build: ./frontend
+    container_name: ecommerce_frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - ecommerce_network
+
 volumes:
   mongo_data:
 
